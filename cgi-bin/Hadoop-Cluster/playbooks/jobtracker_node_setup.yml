@@ -1,0 +1,60 @@
+---
+- hosts: jobtracker_node
+  tasks:
+  
+  - name: "uploading Hadoop"
+    copy: 
+     src: "/var/www/cgi-bin/Hadoop-Cluster/softwares/hadoop-1.2.1-1.x86_64.rpm"
+     dest: "/root/Downloads/hadoop-1.2.1-1.x86_64.rpm"
+  
+  - name: "uploading Java"
+    copy: 
+     src: "/var/www/cgi-bin/Hadoop-Cluster/softwares/jdk-8u171-linux-x64.rpm"
+     dest: "/root/Downloads/jdk-8u171-linux-x64.rpm"
+    
+  - name: "Installing java"
+    package:
+     name: "/root/Downloads/jdk-8u171-linux-x64.rpm"
+     state: "present"
+ 
+  - name: "Installing hadoop" 
+    command: "rpm -i /root/Downloads/hadoop-1.2.1-1.x86_64.rpm --force"
+  
+  - name: "Updating bashrc"
+    lineinfile:
+     path: "/root/.bashrc"
+     line: "echo export JAVA_HOME=/usr/java/jdk1.8.0_171-amd64/ \n echo export PATH=/usr/java/jdk1.8.0_171-amd64/bin/:$PATH"
+     state: "present"
+     create: "yes"
+     insertafter: EOF
+
+  - name: "Uploading template1"
+    template:
+     src: "/var/www/cgi-bin/Hadoop-Cluster/files/jobtracker-hdfs-site.xml.j2"
+     dest: "/etc/hadoop/hdfs-site.xml"
+  
+  - name: "template2"
+    template:
+     src: "/var/www/cgi-bin/Hadoop-Cluster/files/jobtracker-core-site.xml.j2"
+     dest: "/etc/hadoop/core-site.xml"
+  
+  - name: "template3"
+    template:
+     src: "/var/www/cgi-bin/Hadoop-Cluster/files/jobtracker-mapred-site.xml.j2"
+     dest: "/etc/hadoop/mapred-site.xml"
+
+  - name: "Starting jobtracker"
+    command: "hadoop-daemon.sh start jobtracker"
+
+  - name: "firewall"
+    firewalld:
+     port: "{{item}}"
+     immediate: "True"
+     permanent: "True"
+     state: "enabled"
+    with_items:
+    - "9001/tcp"
+    - "9002/tcp"
+    - "50030/tcp"
+    - "50070/tcp"
+...

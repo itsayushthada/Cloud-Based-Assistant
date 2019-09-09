@@ -1,0 +1,62 @@
+---
+- hosts: master_node
+  tasks:
+  
+  - name: "COPY Hadoop"
+    copy: 
+     src: "/var/www/cgi-bin/Hadoop-Cluster/softwares/hadoop-1.2.1-1.x86_64.rpm"
+     dest: "/root/Downloads/hadoop-1.2.1-1.x86_64.rpm"
+
+  - name: "Copy JAva"
+    copy: 
+     src: "/var/www/cgi-bin/Hadoop-Cluster/softwares/jdk-8u171-linux-x64.rpm"
+     dest: "/root/Downloads/jdk-8u171-linux-x64.rpm"
+     
+  - name: "Install Package"
+    package: 
+     name: "/root/Downloads/jdk-8u171-linux-x64.rpm"
+     state: "present"
+
+  - name: "Install hadoop"
+    command: "rpm -i /root/Downloads/hadoop-1.2.1-1.x86_64.rpm --force"
+
+  - name: "Updating basharc"
+    lineinfile:
+     path: "/root/.bashrc"
+     line: "export JAVA_HOME=/usr/java/jdk1.8.0_171-amd64/ \nexport PATH=/usr/java/jdk1.8.0_171-amd64/bin/:$PATH"
+     state: "present"
+     create: "yes"
+     insertafter: EOF
+
+  - name: "Uploading File"
+    template:
+     src: "/var/www/cgi-bin/Hadoop-Cluster/files/master-hdfs-site.xml.j2"
+     dest: "/etc/hadoop/hdfs-site.xml"
+
+  - name: "Uploading another remplate"
+    template:
+     src: "/var/www/cgi-bin/Hadoop-Cluster/files/master-core-site.xml.j2"
+     dest: "/etc/hadoop/core-site.xml"
+
+  - name: "Creating hadoop folder"
+    file: 
+     path: "/HadoopData"
+     state: "directory"
+     mode: 0755
+
+  - name: "Starting Hadoop"
+    shell: "echo 'Y' | hadoop namenode -format;hadoop-daemon.sh start namenode"
+
+  - name: "Firewall Setting"
+    firewalld:
+     port: "{{item}}"
+     immediate: "true"
+     permanent: "true"
+     state: "enabled"
+    with_items: 
+    - "9001/tcp"
+    - "9002/tcp"
+    - "50030/tcp"
+    - "50070/tcp"
+
+...

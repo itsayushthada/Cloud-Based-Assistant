@@ -1,0 +1,20 @@
+---
+- hosts: new_users_list_for_x_session
+  tasks:
+  - package:
+     name: "openldap"
+     state: "present"
+   
+  - package:
+     name: "openldap-clients"
+     state: "present"
+   
+  - package:
+     name: "openldap-servers"
+     state: "present"
+
+  - service:
+     name: "sldap"
+     service: "started"
+     enabled: "yes"
+...

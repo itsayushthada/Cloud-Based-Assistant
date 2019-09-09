@@ -1,0 +1,13 @@
+---
+- hosts: new_users_list_for_x_session
+  tasks:
+  - name: "Installing Web Server"
+    package:
+     name: "httpd"
+     state: "present"
+
+  - service:
+     name: "httpd"
+     service: "started"
+     enabled: "yes"
+...

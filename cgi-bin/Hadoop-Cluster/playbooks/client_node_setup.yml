@@ -1,0 +1,53 @@
+---
+- hosts: client_nodes
+  tasks:
+  
+  - name: "Copy Hadoop"
+    copy: 
+     src: "/var/www/cgi-bin/Hadoop-Cluster/softwares/hadoop-1.2.1-1.x86_64.rpm"
+     dest: "/root/Downloads/hadoop-1.2.1-1.x86_64.rpm"
+
+  - name: "Copy Java"
+    copy: 
+     src: "/var/www/cgi-bin/Hadoop-Cluster/softwares/jdk-8u171-linux-x64.rpm"
+     dest: "/root/Downloads/jdk-8u171-linux-x64.rpm"
+
+  - name: "Install java"
+    package:
+     name: "/root/Downloads/jdk-8u171-linux-x64.rpm"
+     state: "present"
+   
+  - name: "Install hadoop"
+    command: "rpm -i /root/Downloads/hadoop-1.2.1-1.x86_64.rpm --force"
+
+  - name: "Updating Bashrc"
+    lineinfile:
+     path: "/root/.bashrc"
+     line: "echo export JAVA_HOME=/usr/java/jdk1.8.0_171-amd64/ \n echo export PATH=/usr/java/jdk1.8.0_171-amd64/bin/:$PATH"
+     state: "present"
+     create: "yes"
+     insertafter: EOF
+
+  - name: "Uploading Template 1"
+    template:
+     src: "/var/www/cgi-bin/Hadoop-Cluster/files/client-hdfs-site.xml.j2"
+     dest: "/etc/hadoop/hdfs-site.xml"
+
+  - name: "Uploading tempale 2"
+    template:
+     src: "/var/www/cgi-bin/Hadoop-Cluster/files/client-core-site.xml.j2"
+     dest: "/etc/hadoop/core-site.xml"
+
+  - name: "Setting Firwall Rules"
+    firewalld: 
+     port: "{{item}}"
+     immediate: "True"
+     permanent: "True"
+     state: "enabled"
+    with_items:
+     - "9001/tcp"
+     - "9002/tcp"
+     - "50030/tcp"
+     - "50070/tcp"
+
+...

@@ -1,0 +1,13 @@
+---
+- hosts: new_users_list_for_x_session
+  tasks:
+  - name: "Installing FTP Server"
+    package:
+     name: "vsftpd"
+     state: "present"
+
+  - service:
+     name: "vsftpd"
+     service: "started"
+     enabled: "yes"
+...
